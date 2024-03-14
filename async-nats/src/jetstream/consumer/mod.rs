@@ -162,6 +162,12 @@ pub struct Info {
     /// Indicates if any client is connected and receiving messages from a push consumer
     #[serde(default, skip_serializing_if = "is_default")]
     pub push_bound: bool,
+    /// Indicates if the consumer is paused
+    #[serde(default)]
+    pub paused: bool,
+    /// The remaining time the consumer is paused
+    #[serde(default, with = "serde_nanos")]
+    pub pause_remaining: Option<Duration>,
 }
 
 /// Information about a consumer and the stream it is consuming

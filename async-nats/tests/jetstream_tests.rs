@@ -27,7 +27,8 @@ mod jetstream {
     #[cfg(feature = "server_2_10")]
     use std::collections::HashMap;
     use std::str::from_utf8;
-    use std::time::{Duration, Instant};
+    use std::time::Duration;
+    use std::time::Instant;
 
     use super::*;
     use async_nats::connection::State;
@@ -3870,5 +3871,50 @@ mod jetstream {
             .unwrap();
         assert_eq!(message.sequence, 11);
         assert_eq!(from_utf8(&message.payload).unwrap(), "2");
+    }
+
+    #[tokio::test]
+    async fn pause_consumer() {
+        use time::Duration;
+        let server = nats_server::run_server("tests/configs/jetstream.conf");
+        let client = async_nats::ConnectOptions::new()
+            .connect(server.client_url())
+            .await
+            .unwrap();
+        let jetstream = async_nats::jetstream::new(client);
+
+        let stream = jetstream
+            .create_stream(stream::Config {
+                name: "events".to_string(),
+                subjects: vec!["events.>".to_string()],
+                ..Default::default()
+            })
+            .await
+            .unwrap();
+
+        let mut consumer = stream
+            .create_consumer(consumer::pull::Config {
+                durable_name: Some("name".to_string()),
+                ..Default::default()
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(consumer.info().await.unwrap().paused, false);
+
+        stream
+            .pause_consumer(
+                "name",
+                OffsetDateTime::now_utc().saturating_add(Duration::seconds_f32(10.0)),
+            )
+            .await
+            .unwrap();
+
+        let info = consumer.info().await.unwrap();
+        assert_eq!(info.paused, true);
+
+        stream.resume_consumer("name").await.unwrap();
+        let info = consumer.info().await.unwrap();
+        assert_eq!(info.paused, false);
     }
 }
