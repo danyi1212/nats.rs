@@ -1091,12 +1091,13 @@ impl<I> Stream<I> {
     /// use futures::StreamExt;
     /// let client = async_nats::connect("localhost:4222").await?;
     /// let jetstream = async_nats::jetstream::new(client);
-    /// let pause_until = time::OffsetDateTime::now_utc().saturating_add(time::Duration::seconds_f32(10.0));
+    /// let pause_until =
+    ///     time::OffsetDateTime::now_utc().saturating_add(time::Duration::seconds_f32(10.0));
     ///
     /// jetstream
     ///     .get_stream("events")
     ///     .await?
-    ///     .pause_consumer("my_consumer",  pause_until)
+    ///     .pause_consumer("my_consumer", pause_until)
     ///     .await?;
     /// # Ok(())
     /// # }

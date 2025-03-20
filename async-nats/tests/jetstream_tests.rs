@@ -3900,7 +3900,7 @@ mod jetstream {
             .await
             .unwrap();
 
-        assert_eq!(consumer.info().await.unwrap().paused, false);
+        assert!(!consumer.info().await.unwrap().paused);
 
         stream
             .pause_consumer(
@@ -3911,10 +3911,10 @@ mod jetstream {
             .unwrap();
 
         let info = consumer.info().await.unwrap();
-        assert_eq!(info.paused, true);
+        assert!(info.paused);
 
         stream.resume_consumer("name").await.unwrap();
         let info = consumer.info().await.unwrap();
-        assert_eq!(info.paused, false);
+        assert!(!info.paused);
     }
 }
